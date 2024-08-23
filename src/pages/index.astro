@@ -1,0 +1,78 @@
+---
+import EmailList from "../components/EmailList.vue";
+import Form from "../components/Form.vue";
+import SMTPConnection from "../components/SMTPConnection.vue";
+import PageLayout from "../layouts/PageLayout.astro";
+
+const siteKey = process.env.SITE_KEY as string;
+const password = Astro.cookies.get("auth_password")?.value;
+const authenticated = password === siteKey;
+
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const submittedPassword = formData.get("password");
+
+  if (submittedPassword === siteKey) {
+    Astro.cookies.set("auth_password", submittedPassword, {
+      path: "/",
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
+    return Astro.redirect("/", 303); // Use 303 status code to ensure the method is changed to GET
+  }
+}
+---
+
+<PageLayout>
+  {
+    !authenticated ? (
+      <div class="flex justify-center items-center h-screen">
+        <div class="bg-black/65 p-8 rounded-lg">
+          <h2 class="text-sm font-bold mb-4 text-center">Access Restricted</h2>
+          <form method="POST" class="space-y-4">
+            <div>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                class="w-full px-3 py-2 bg-transparent border border-slate-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300 text-xs"
+            >
+              Submit
+            </button>
+          </form>
+        </div>
+      </div>
+    ) : (
+      <div class="flex flex-row justify-between my-8 gap-8">
+        <div class="w-1/2 min-h-56 bg-black/65 rounded-lg p-8 space-y-4">
+          <h3 class="font-bold text-xl">
+            Ensure the information are accurate and ready to be sent out
+          </h3>
+          <Form client:only="vue" />
+        </div>
+        <div class="w-1/2">
+          <div class="w-full flex justify-between">
+            <div class="w-1/2">
+              <EmailList client:only="vue" />
+            </div>
+            <div class="w-1/2 bg-black/65 p-4 space-y-2">
+              <h3 class="font-semibold text-md">SMTP Connection</h3>
+              <p class="text-xs text-red-400 font-light py-2">
+                For security reasons, this tool will send 100 email in the list
+                per smtp, per day.
+              </p>
+              <SMTPConnection client:only="vue" />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+</PageLayout>
