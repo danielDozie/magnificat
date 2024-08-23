@@ -11,8 +11,8 @@ const emailLists = ref(JSON.parse(localStorage.getItem('emailList')) || []);
 // smtpConfigs: An array to store multiple SMTP configurations
 const smtpConfigs = ref(JSON.parse(localStorage.getItem('smtpForms')) || []);
 
-const recipients = ref(JSON.parse(localStorage.getItem('emailList')).length || '0');
-const connections = ref(JSON.parse(localStorage.getItem('smtpDetails')).length || '0');
+const recipients = ref(JSON.parse(localStorage.getItem('emailList'))?.length || '0');
+const connections = ref(JSON.parse(localStorage.getItem('smtpDetails'))?.length || '0');
 
 // // Function to update local storage
 // const updateLocalStorage = () => {
