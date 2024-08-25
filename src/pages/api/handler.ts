@@ -30,7 +30,6 @@ export const POST: APIRoute = async ({ request }) => {
     const smtps: SMTPConfig[] = smtpConfigs;
     
     const mailList = emailLists;
-    console.log({mailList})
     // Load unsent emails
     let unsentEmails: string[] = await kv.get('unsent_emails') || [];
 
