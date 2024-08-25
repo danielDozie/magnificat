@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue';
 
 const from = ref('');
+const name = ref('');
 const subject = ref('');
 const message = ref('');
 
@@ -28,7 +29,7 @@ const loading = ref(false);
 
 const sendMail = async () => {
     loading.value = true;
-    if (!from.value || !subject.value || !message.value) {
+    if (!from.value || !subject.value || !message.value || !name.value) {
         alert('Oga! fill in all fields before sending. 😜');
         loading.value = false;
         return;
@@ -42,7 +43,7 @@ const sendMail = async () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    formData: { from: from.value, subject: subject.value, message: message.value },
+                    formData: { from: from.value, name: name.value, subject: subject.value, message: message.value },
                     emailLists: emailLists.value,
                     smtpConfigs: smtpConfigs.value,
                 }),
@@ -72,8 +73,12 @@ const sendMail = async () => {
     <form class="flex flex-col gap-y-4" @submit.prevent="sendMail">
         <span class="space-y-2">
             <label>From</label>
-            <input v-model="from" placeholder="Enter email sender"
-                class="w-full p-2 bg-transparent border-slate-400 border rounded-md" />
+            <div class="flex gap-4">
+                <input v-model="from" placeholder="Enter email sender"
+                    class="w-full p-2 bg-transparent border-slate-400 border rounded-md" />
+                <input v-model="name" placeholder="Sender name"
+                    class="w-full p-2 bg-transparent border-slate-400 border rounded-md" />
+        </div>
         </span>
         <span class="space-y-2">
             <label>Subject</label>
@@ -92,8 +97,10 @@ const sendMail = async () => {
             </div>
         </span>
         <span class="flex space-y-2 justify-center items-center">
-            <button type="submit" :class="[loading ? 'bg-gray-800' : 'bg-green-600', 'px-12 py-2 rounded-xl flex items-center justify-center']">
-                <span v-if="loading" class="mr-2 animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></span>
+            <button type="submit"
+                :class="[loading ? 'bg-gray-800' : 'bg-green-600', 'px-12 py-2 rounded-xl flex items-center justify-center']">
+                <span v-if="loading"
+                    class="mr-2 animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></span>
                 {{ loading ? "Sending messages..." : "Bomb this mail 💣" }}
             </button>
         </span>

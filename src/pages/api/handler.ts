@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
 import nodemailer from 'nodemailer';
-import fs from 'fs/promises';
+import { promises as fs } from 'fs';
 import path from 'path';
+import { kv } from '@vercel/kv';
 
 interface FormData {
   from: string;
@@ -22,23 +23,16 @@ interface EmailResult {
   error?: string;
 }
 
-
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const { formData, emailLists, smtpConfigs } = await request.json();
+    const { formData, emailLists, smtpConfigs, name } = await request.json();
     const { from, subject, message }: FormData = formData;
     const smtps: SMTPConfig[] = smtpConfigs;
     
-    const UNSENT_EMAILS_FILE = path.join(process.cwd(), `unsent_emails.json`);
-
     const mailList = emailLists;
     console.log({mailList})
-    // Load unsent emails from previous attempts
-    try {
-      const unsentEmails = JSON.parse(await fs.readFile(UNSENT_EMAILS_FILE, 'utf-8'));
-    } catch (error) {
-      console.log('No unsent emails found or error reading file:', error);
-    }
+    // Load unsent emails
+    let unsentEmails: string[] = await kv.get('unsent_emails') || [];
 
     if (!from || !subject || !message || !mailList || smtps.length === 0) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
@@ -59,7 +53,7 @@ export const POST: APIRoute = async ({ request }) => {
     console.log('Chunk: ', emailChunks)
 
     const results: EmailResult[] = [];
-    const unsentEmails: string[] = [];
+    //const unsentEmails: string[] = [];
 
     for (let i = 0; i < emailChunks.length; i++) {
       const chunk = emailChunks[i];
@@ -86,7 +80,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
       const mailOptions = {
           from: {
-              name: `Chidozie Danny <${from}>`,//use any email to cloak sender
+              name: `${name} <${from}>`,//use any email to cloak sender
               address: isValidEmail(smtp.user) ? smtp.user : (isValidEmail(from) ? from : from),
           },
           subject: subject,
@@ -114,7 +108,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Save unsent emails for future processing
-    await fs.writeFile(UNSENT_EMAILS_FILE, JSON.stringify(unsentEmails));
+    await kv.set('unsent_emails', unsentEmails);
 
     const successCount = results.filter(result => result.status === 'sent').length;
     const failureCount = results.filter(result => result.status === 'failed').length;
