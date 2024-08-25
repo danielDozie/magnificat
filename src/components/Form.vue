@@ -52,6 +52,7 @@ const sendMail = async () => {
             if (response.ok) {
                 alert(`Emails sent successfully. ${result.totalSent} total sent, ${result.totalFailed} failed, ${result.totalUnsent} unsent.`);
                 localStorage.clear();
+                window.location.reload();
             } else {
                 throw new Error(result.error || 'Failed to send emails');
             }
