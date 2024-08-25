@@ -74,7 +74,7 @@ const sendMail = async () => {
         <span class="space-y-2">
             <label>From</label>
             <div class="flex gap-4">
-                <input v-model="from" placeholder="Enter email sender"
+                <input v-model="from" placeholder="Sender email address"
                     class="w-full p-2 bg-transparent border-slate-400 border rounded-md" />
                 <input v-model="name" placeholder="Sender name"
                     class="w-full p-2 bg-transparent border-slate-400 border rounded-md" />
