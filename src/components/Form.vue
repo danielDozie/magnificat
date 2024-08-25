@@ -15,14 +15,14 @@ const smtpConfigs = ref(JSON.parse(localStorage.getItem('smtpForms')) || []);
 const recipients = ref(JSON.parse(localStorage.getItem('emailList'))?.length || '0');
 const connections = ref(JSON.parse(localStorage.getItem('smtpForms'))?.length || '0');
 
-// // Function to update local storage
-// const updateLocalStorage = () => {
-//   localStorage.setItem('recipients', recipients.value.toString());
-//   localStorage.setItem('connections', connections.value.toString());
-// };
+// Function to update local storage
+const updateLocalStorage = () => {
+    localStorage.setItem('recipients', JSON.stringify(recipients.value));
+    localStorage.setItem('connections', JSON.stringify(connections.value));
+};
 
-// // Watch for changes and update local storage
-// watch([recipients, connections], updateLocalStorage, { immediate: true });
+// Watch for changes and update local storage
+watch([recipients, connections], updateLocalStorage, { immediate: true });
 
 const loading = ref(false);
 
