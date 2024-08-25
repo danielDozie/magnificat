@@ -1,4 +1,5 @@
 ---
+import LoadingComponent from "../components/LoadingComponent.astro";
 const title = "Mailer";
 ---
 
@@ -12,9 +13,10 @@ const title = "Mailer";
   <body
     class="max-w-7xl flex flex-col justify-center mx-8 relative bg-[url('https://i.ytimg.com/vi/ouJq0oevLIg/maxresdefault.jpg')] bg-[#1a202c] bg-blend-overlay bg-opacity-98 text-slate-100"
   >
+    <LoadingComponent />
     <div class="flex m-4 justify-center items-center">
       <h1 class="text-3xl font-semibold">iZUES Mailer v1.0</h1>
     </div>
-    <slot/>
+    <slot />
   </body>
 </html>

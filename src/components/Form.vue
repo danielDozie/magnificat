@@ -12,7 +12,7 @@ const emailLists = ref(JSON.parse(localStorage.getItem('emailList')) || []);
 const smtpConfigs = ref(JSON.parse(localStorage.getItem('smtpForms')) || []);
 
 const recipients = ref(JSON.parse(localStorage.getItem('emailList'))?.length || '0');
-const connections = ref(JSON.parse(localStorage.getItem('smtpDetails'))?.length || '0');
+const connections = ref(JSON.parse(localStorage.getItem('smtpForms'))?.length || '0');
 
 // // Function to update local storage
 // const updateLocalStorage = () => {
@@ -23,12 +23,16 @@ const connections = ref(JSON.parse(localStorage.getItem('smtpDetails'))?.length 
 // // Watch for changes and update local storage
 // watch([recipients, connections], updateLocalStorage, { immediate: true });
 
+const loading = ref(false);
+
+
 const sendMail = async () => {
+    loading.value = true;
     if (!from.value || !subject.value || !message.value) {
         alert('Oga! fill in all fields before sending. 😜');
+        loading.value = false;
         return;
     }
-
     const confirmed = await confirm(`Are you sure? There are ${recipients.value} RECIPIENTS and ${connections.value} SMTP connections.`);
     if (confirmed) {
         try {
@@ -45,16 +49,23 @@ const sendMail = async () => {
             });
             const result = await response.json();
             if (response.ok) {
-                alert(`Emails sent successfully. ${result.totalSent} sent, ${result.totalFailed} failed, ${result.totalUnsent} unsent.`);
+                alert(`Emails sent successfully. ${result.totalSent} total sent, ${result.totalFailed} failed, ${result.totalUnsent} unsent.`);
+                localStorage.clear();
             } else {
                 throw new Error(result.error || 'Failed to send emails');
             }
         } catch (error) {
             console.error('Error sending emails:', error);
             alert('Failed to send emails. Please check the console for more details.');
+        } finally {
+            loading.value = false;
         }
+    } else {
+        loading.value = false;
     }
+    
 }
+
 </script>
 
 <template>
@@ -81,7 +92,10 @@ const sendMail = async () => {
             </div>
         </span>
         <span class="flex space-y-2 justify-center items-center">
-            <button type="submit" class="bg-green-600 px-12 py-2 rounded-xl">Bomb this mail 💣</button>
+            <button type="submit" :class="[loading ? 'bg-gray-800' : 'bg-green-600', 'px-12 py-2 rounded-xl flex items-center justify-center']">
+                <span v-if="loading" class="mr-2 animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></span>
+                {{ loading ? "Sending messages..." : "Bomb this mail 💣" }}
+            </button>
         </span>
     </form>
 </template>

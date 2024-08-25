@@ -20,12 +20,6 @@ interface EmailResult {
   email: string;
   status: 'sent' | 'failed';
   error?: string;
-  label: string;
-}
-
-interface EmailList {
-  label: string;
-  emails: string[];
 }
 
 
@@ -37,33 +31,29 @@ export const POST: APIRoute = async ({ request }) => {
     
     const UNSENT_EMAILS_FILE = path.join(process.cwd(), `unsent_emails.json`);
 
-    // Label the entire emailLists array
-    const label = `List_${Date.now()}`;
-    let labeledEmails: { list: []; label: string } = {list: emailLists, label}
-
+    const mailList = emailLists;
+    console.log({mailList})
     // Load unsent emails from previous attempts
     try {
       const unsentEmails = JSON.parse(await fs.readFile(UNSENT_EMAILS_FILE, 'utf-8'));
-      labeledEmails.list = [...unsentEmails, ...labeledEmails.list] as any;
     } catch (error) {
       console.log('No unsent emails found or error reading file:', error);
     }
 
-    if (!from || !subject || !message || !labeledEmails.list || smtps.length === 0) {
+    if (!from || !subject || !message || !mailList || smtps.length === 0) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
     }
 
     // Clean up and format the email list
-    const cleanedEmailList = labeledEmails.list.flatMap((item: any) => {
+    const cleanedEmailList: [] = mailList.map((item: string) => {
       if (typeof item === 'string') {
-        return { email: item, label: labeledEmails.label };
-      } else if (item && typeof item === 'object' && 'email' in item && 'label' in item) {
         return item;
       }
-      return [];
+        return;
     });
 
-    const emailsPerSMTPPerDay = 2;
+
+    const emailsPerSMTPPerDay = 100;
     const emailChunks = chunkArray(cleanedEmailList, emailsPerSMTPPerDay);
     
     console.log('Chunk: ', emailChunks)
@@ -78,6 +68,12 @@ export const POST: APIRoute = async ({ request }) => {
         continue;
       }
 
+    
+    function isValidEmail(email: string): boolean {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
       const smtp = smtps[i % smtps.length];
       const transporter = nodemailer.createTransport({
         host: smtp.host,
@@ -88,22 +84,26 @@ export const POST: APIRoute = async ({ request }) => {
           pass: smtp.password,
         },
       });
-
       const mailOptions = {
-        from: from,
-        subject: subject,
-        html: message,
+          from: {
+              name: `Chidozie Danny <${from}>`,//use any email to cloak sender
+              address: isValidEmail(smtp.user) ? smtp.user : (isValidEmail(from) ? from : from),
+          },
+          subject: subject,
+          html: message,
+          replyTo: from,// specify reply-to email
       };
 
-      for (const { email, label } of chunk) {
+      for (const email of chunk) {
         try {
-          await transporter.sendMail({ ...mailOptions, to: email });
-          results.push({ email, status: 'sent', label });
+          await transporter.sendMail({ ...mailOptions, to: email,  });
+          results.push({ email, status: 'sent' });
         } catch (error) {
-            console.error(`Failed to send email to ${email}:`, error);
-            //@ts-ignore
-          results.push({ email, status: 'failed', error: error.message, label });
-          unsentEmails.push(email);
+          console.error(`Failed to send email to ${email}:`, error);
+          results.push({ email, status: 'failed', error: error as string });
+            if (unsentEmails.find((x) => x !== email)) {
+                unsentEmails.push(email);
+            };
         }
       }
     }

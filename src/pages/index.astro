@@ -18,6 +18,7 @@ if (Astro.request.method === "POST") {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
+      maxAge: 172800, //2days
     });
     return Astro.redirect("/", 303); // Use 303 status code to ensure the method is changed to GET
   }
