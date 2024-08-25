@@ -1,13 +1,12 @@
 import type { APIRoute } from 'astro';
 import nodemailer from 'nodemailer';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { kv } from '@vercel/kv';
 
 interface FormData {
   from: string;
   subject: string;
-  message: string;
+    message: string;
+    name: string;
 }
 
 interface SMTPConfig {
@@ -25,8 +24,8 @@ interface EmailResult {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const { formData, emailLists, smtpConfigs, name } = await request.json();
-    const { from, subject, message }: FormData = formData;
+    const { formData, emailLists, smtpConfigs } = await request.json();
+    const { from, subject, message, name }: FormData = formData;
     const smtps: SMTPConfig[] = smtpConfigs;
     
     const mailList = emailLists;
