@@ -26,6 +26,24 @@ watch([recipients, connections], updateLocalStorage, { immediate: true });
 
 const loading = ref(false);
 
+// Add the following code to store and retrieve form data from local storage
+
+// Function to update form data in local storage
+const updateFormData = () => {
+    localStorage.setItem('formData', JSON.stringify({ from: from.value, name: name.value, subject: subject.value, message: message.value }));
+};
+
+// Watch for changes and update form data in local storage
+watch([from, name, subject, message], updateFormData, { deep: true, immediate: true });
+
+// Retrieve form data from local storage on component mount
+const storedFormData = JSON.parse(localStorage.getItem('formData'));
+if (storedFormData) {
+    from.value = storedFormData.from;
+    name.value = storedFormData.name;
+    subject.value = storedFormData.subject;
+    message.value = storedFormData.message;
+}
 
 const sendMail = async () => {
     loading.value = true;
