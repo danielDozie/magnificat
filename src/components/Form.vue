@@ -51,14 +51,14 @@ const sendMail = async () => {
             const result = await response.json();
             if (response.ok) {
                 alert(`Emails sent successfully. ${result.totalSent} total sent, ${result.totalFailed} failed, ${result.totalUnsent} unsent.`);
-                localStorage.clear();
+                localStorage.remove("emailList");
                 window.location.reload();
             } else {
                 throw new Error(result.error || 'Failed to send emails');
             }
         } catch (error) {
             console.error('Error sending emails:', error);
-            alert('Failed to send emails. Please check the console for more details.');
+            alert('Failed to send emails. Please check the console for more details');
         } finally {
             loading.value = false;
         }

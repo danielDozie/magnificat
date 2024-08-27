@@ -57,7 +57,7 @@ export const POST: APIRoute = async ({ request }) => {
       const chunk = emailChunks[i];
       if (!chunk || chunk.length === 0) {
         console.log(`Skipping empty chunk at index ${i}`);
-        continue;
+        continue; 
       }
 
     
